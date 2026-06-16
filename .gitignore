@@ -8,3 +8,4 @@ venv/
 public/index.html
 .pytest_cache/
 recon/
+.claude/settings.local.json

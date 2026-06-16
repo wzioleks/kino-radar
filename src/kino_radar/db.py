@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS screenings (
     time           TEXT NOT NULL,
     cinema_type    TEXT NOT NULL,
     url            TEXT NOT NULL,
+    poster_path    TEXT,
     PRIMARY KEY (cinema, title, date, time)
 );
 CREATE TABLE IF NOT EXISTS watchlist (
@@ -34,15 +35,32 @@ CREATE TABLE IF NOT EXISTS tmdb_cache (
     query          TEXT PRIMARY KEY,
     tmdb_id        INTEGER,
     original_title TEXT,
-    year           INTEGER
+    year           INTEGER,
+    poster_path    TEXT
 );
 """
+
+# Kolumny dodane po pierwszej wersji schematu — ALTER na istniejących bazach.
+_MIGRATIONS = {
+    "screenings": [("poster_path", "TEXT")],
+    "tmdb_cache": [("poster_path", "TEXT")],
+}
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    for table, columns in _MIGRATIONS.items():
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        for name, decl in columns:
+            if name not in existing:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+    conn.commit()
 
 
 def connect(path: Path | str = DEFAULT_DB) -> sqlite3.Connection:
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
     conn.executescript(_SCHEMA)
+    _migrate(conn)
     return conn
 
 
@@ -54,13 +72,13 @@ def save_screenings(conn: sqlite3.Connection, screenings: Iterable[Screening]) -
     """Zapis z dedupem po (cinema, title, date, time). Aliasy kin przed zapisem."""
     rows = [
         (_canon_cinema(s.cinema), s.title, s.original_title, s.imdb_id, s.tmdb_id,
-         s.date, s.time, s.cinema_type, s.url)
+         s.date, s.time, s.cinema_type, s.url, s.poster_path)
         for s in screenings
     ]
     conn.executemany(
         "INSERT OR REPLACE INTO screenings "
-        "(cinema, title, original_title, imdb_id, tmdb_id, date, time, cinema_type, url) "
-        "VALUES (?,?,?,?,?,?,?,?,?)",
+        "(cinema, title, original_title, imdb_id, tmdb_id, date, time, cinema_type, url, poster_path) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?)",
         rows,
     )
     conn.commit()
@@ -80,17 +98,18 @@ def save_watchlist(conn: sqlite3.Connection, items: Iterable[WatchlistItem]) -> 
 
 def get_cached_tmdb(conn: sqlite3.Connection, query: str) -> Optional[sqlite3.Row]:
     cur = conn.execute(
-        "SELECT tmdb_id, original_title, year FROM tmdb_cache WHERE query = ?",
+        "SELECT tmdb_id, original_title, year, poster_path FROM tmdb_cache WHERE query = ?",
         (query,),
     )
     return cur.fetchone()
 
 
 def put_cached_tmdb(conn: sqlite3.Connection, query: str, tmdb_id: Optional[int],
-                    original_title: Optional[str], year: Optional[int]) -> None:
+                    original_title: Optional[str], year: Optional[int],
+                    poster_path: Optional[str] = None) -> None:
     conn.execute(
-        "INSERT OR REPLACE INTO tmdb_cache (query, tmdb_id, original_title, year) "
-        "VALUES (?,?,?,?)",
-        (query, tmdb_id, original_title, year),
+        "INSERT OR REPLACE INTO tmdb_cache (query, tmdb_id, original_title, year, poster_path) "
+        "VALUES (?,?,?,?,?)",
+        (query, tmdb_id, original_title, year, poster_path),
     )
     conn.commit()

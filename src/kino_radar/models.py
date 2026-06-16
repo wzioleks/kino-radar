@@ -20,6 +20,7 @@ class Screening:
     original_title: Optional[str] = None
     imdb_id: Optional[str] = None
     tmdb_id: Optional[int] = None
+    poster_path: Optional[str] = None  # ścieżka TMDb, np. '/abc.jpg'
 
     @property
     def dedup_key(self) -> tuple[str, str, str, str]:

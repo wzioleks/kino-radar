@@ -45,7 +45,8 @@ class TmdbResolver:
         if cached is not None:
             if cached["tmdb_id"] is None:
                 return None
-            return Resolved(cached["tmdb_id"], cached["original_title"], cached["year"])
+            return Resolved(cached["tmdb_id"], cached["original_title"],
+                            cached["year"], cached["poster_path"])
 
         params = {"api_key": self.api_key, "query": title, "language": self.language}
         if year:
@@ -61,13 +62,15 @@ class TmdbResolver:
             return None
 
         if not results:
-            db.put_cached_tmdb(self.conn, key, None, None, None)
+            db.put_cached_tmdb(self.conn, key, None, None, None, None)
             return None
 
         top = results[0]
         rel = top.get("release_date") or ""
         ryear = int(rel[:4]) if rel[:4].isdigit() else None
-        resolved = Resolved(top["id"], top.get("original_title"), ryear)
+        resolved = Resolved(top["id"], top.get("original_title"), ryear,
+                            top.get("poster_path"))
         db.put_cached_tmdb(self.conn, key, resolved.tmdb_id,
-                           resolved.original_title, resolved.year)
+                           resolved.original_title, resolved.year,
+                           resolved.poster_path)
         return resolved

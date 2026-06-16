@@ -26,6 +26,7 @@ class Resolved:
     tmdb_id: int
     original_title: Optional[str]
     year: Optional[int]
+    poster_path: Optional[str] = None
 
 
 class Resolver(Protocol):
@@ -79,6 +80,8 @@ async def match(
 ) -> list[Screening]:
     """Zwraca seanse, których film jest na watchliście (z dopiętym tmdb_id)."""
     index = WatchlistIndex(watchlist)
+    posters: dict[int, str] = {}   # tmdb_id -> poster_path
+    titles: dict[int, str] = {}    # tmdb_id -> tytuł oryginalny (TMDb)
 
     # Watchlista -> tmdb_id (dla kroku 3). Wymaga resolvera.
     if resolver is not None:
@@ -88,6 +91,10 @@ async def match(
                 if r:
                     it.tmdb_id = r.tmdb_id
                     index.tmdb_ids.add(r.tmdb_id)
+                    if r.poster_path:
+                        posters.setdefault(r.tmdb_id, r.poster_path)
+                    if r.original_title:
+                        titles.setdefault(r.tmdb_id, r.original_title)
 
     matched: list[Screening] = []
     for s in screenings:
@@ -109,6 +116,10 @@ async def match(
             r = await resolver.resolve(query, await _screening_year(s))
             if r:
                 s.tmdb_id = r.tmdb_id
+                if r.poster_path:
+                    posters.setdefault(r.tmdb_id, r.poster_path)
+                if r.original_title:
+                    titles.setdefault(r.tmdb_id, r.original_title)
                 if r.tmdb_id in index.tmdb_ids:
                     hit = next((it for it in watchlist if it.tmdb_id == r.tmdb_id), None)
 
@@ -116,6 +127,12 @@ async def match(
             if s.tmdb_id is None:
                 s.tmdb_id = hit.tmdb_id
             matched.append(s)
+
+    for s in matched:
+        if s.poster_path is None and s.tmdb_id in posters:
+            s.poster_path = posters[s.tmdb_id]
+        if s.tmdb_id in titles:
+            s.original_title = titles[s.tmdb_id]
 
     log.info("Matcher: %d/%d seansów z watchlisty", len(matched), len(screenings))
     return matched

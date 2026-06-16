@@ -36,8 +36,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: kina.sqlite
-          key: kina-sqlite-${{ github.run_id }}
-          restore-keys: kina-sqlite-
+          key: kina-sqlite-v2-${{ github.run_id }}
+          restore-keys: kina-sqlite-v2-
 
       - name: Scrape → match → render
         env:
