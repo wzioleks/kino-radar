@@ -1,0 +1,55 @@
+name: Aktualizacja kino-radar
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # codziennie ~08:00 PL (lato)
+  workflow_dispatch: {}     # ręczne odpalenie
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: kino-radar-update
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalacja zależności
+        run: pip install -e .
+
+      - name: Cache TMDb (SQLite)
+        uses: actions/cache@v4
+        with:
+          path: kina.sqlite
+          key: kina-sqlite-${{ github.run_id }}
+          restore-keys: kina-sqlite-
+
+      - name: Scrape → match → render
+        env:
+          LETTERBOXD_USER: ${{ secrets.LETTERBOXD_USER }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: python -m kino_radar.main
+
+      - name: Upload artefaktu Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy na GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

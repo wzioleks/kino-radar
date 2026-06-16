@@ -1,0 +1,43 @@
+{
+  "status": 200,
+  "data": {
+    "movies": {
+      "m4349": {
+        "id": 4349,
+        "sourceId": "fb4beca0-62de-495a-abed-5f234d19aefc",
+        "title": "Dzień objawienia",
+        "titleOriginal": "Disclosure Day",
+        "slug": "dzien-objawienia"
+      },
+      "m4466": {
+        "id": 4466,
+        "sourceId": "0c138744-d781-4f14-9d12-1e321d791f30",
+        "title": "Sprawiedliwość owiec",
+        "titleOriginal": "The Sheep Detectives",
+        "slug": "sprawiedliwosc-owiec"
+      }
+    },
+    "screenings": {
+      "2026-06-16": {
+        "m4349": {
+          "screenings": [
+            {"timeFrom": "2026-06-16 10:30:00", "sourceId": "95e229a0-0625-43e7-ba53-acc57092919e", "cinemaSourceId": "60cfe883-55aa-4e28-be7f-233f589a34cb"},
+            {"timeFrom": "2026-06-16 13:45:00", "sourceId": "d1c440eb-144f-44ad-ba9f-02e054fb2e94", "cinemaSourceId": "60cfe883-55aa-4e28-be7f-233f589a34cb"}
+          ]
+        },
+        "m4466": {
+          "screenings": [
+            {"timeFrom": "2026-06-16 16:00:00", "sourceId": "2ce00381-e5eb-4aad-a15f-e1ed56bd3a4e", "cinemaSourceId": "60cfe883-55aa-4e28-be7f-233f589a34cb"}
+          ]
+        }
+      },
+      "2026-06-17": {
+        "m4349": {
+          "screenings": [
+            {"timeFrom": "2026-06-17 18:00:00", "sourceId": "28f64bc7-b44d-4206-9d47-07ee92bbebeb", "cinemaSourceId": "60cfe883-55aa-4e28-be7f-233f589a34cb"}
+          ]
+        }
+      }
+    }
+  }
+}

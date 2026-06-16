@@ -1,0 +1,28 @@
+{
+  "result": [
+    {
+      "filmId": "HO00002549",
+      "filmTitle": "Dzień objawienia",
+      "originalTitle": "Disclosure Day",
+      "filmUrl": "https://www.multikino.pl/filmy/dzien-objawienia",
+      "releaseDate": "2026-06-12T00:00:00",
+      "showingGroups": [
+        {
+          "date": "2026-06-16T00:00:00",
+          "sessions": [
+            {"sessionId": "89732", "bookingUrl": "/rezerwacja-biletow/podsumowanie/0004/HO00002549/89732", "startTime": "2026-06-16T11:00:00"},
+            {"sessionId": "89733", "bookingUrl": "/rezerwacja-biletow/podsumowanie/0004/HO00002549/89733", "startTime": "2026-06-16T14:10:00"}
+          ]
+        }
+      ]
+    },
+    {
+      "filmId": "HO00002550",
+      "filmTitle": "Bez tytułu sesji",
+      "originalTitle": "",
+      "filmUrl": "https://www.multikino.pl/filmy/bez-sesji",
+      "releaseDate": "2026-01-01T00:00:00",
+      "showingGroups": []
+    }
+  ]
+}
