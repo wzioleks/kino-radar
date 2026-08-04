@@ -328,7 +328,10 @@ const chipColor = (types) => types.length === 1 ? COLORS[types[0]] : COLORS.stud
 function posterEl(path, cls, phCls) {
   if (path) {
     const img = document.createElement('img');
-    img.className = cls; img.src = IMG + 'w185' + path; img.alt = ''; img.loading = 'lazy';
+    /* TMDb daje ścieżkę ('/abc.jpg'), kina podają gotowy adres */
+    img.className = cls;
+    img.src = path.startsWith('http') ? path : IMG + 'w185' + path;
+    img.alt = ''; img.loading = 'lazy';
     return img;
   }
   const ph = document.createElement('div');

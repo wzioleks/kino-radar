@@ -11,30 +11,48 @@ from .letterboxd import WatchlistError, fetch as fetch_watchlist
 from .matcher import match
 from .models import Screening
 from .normalize import normalize_title
-from .sources import coigdzie, helios, multikino
+from .sources import coigdzie, helios, multikino, zak
 from .tmdb import TmdbResolver
 
 log = logging.getLogger(__name__)
 
+# Kolejność ma znaczenie: przy duplikacie wygrywa źródło wcześniejsze, więc
+# Żak (własna strona: tytuł oryginalny + plakat) idzie przed coigdzie.
 SOURCES = {
     "helios": helios.fetch,
     "multikino": multikino.fetch,
+    "zak": zak.fetch,
     "coigdzie": coigdzie.fetch,
 }
 
 
 async def collect_screenings(client, days: int) -> list[Screening]:
-    """Zbiera seanse ze wszystkich źródeł. Padnięte źródło = warning, nie crash."""
+    """Zbiera seanse ze wszystkich źródeł. Padnięte źródło = warning, nie crash.
+
+    Kina bywają w dwóch źródłach naraz (Żak u siebie i na coigdzie), więc
+    ten sam seans ucinamy po kinie, tytule, dniu i godzinie. Zapas zostaje,
+    bo gdy lepsze źródło padnie, gorsze nadal dowozi repertuar.
+    """
     results = await asyncio.gather(
         *(fn(client, days) for fn in SOURCES.values()),
         return_exceptions=True,
     )
     screenings: list[Screening] = []
+    seen: set[tuple[str, str, str, str]] = set()
     for name, res in zip(SOURCES, results):
         if isinstance(res, Exception):
             log.warning("Źródło '%s' padło: %s", name, res)
             continue
-        screenings.extend(res)
+        duplicates = 0
+        for s in res:
+            key = (s.cinema, normalize_title(s.title), s.date, s.time)
+            if key in seen:
+                duplicates += 1
+                continue
+            seen.add(key)
+            screenings.append(s)
+        if duplicates:
+            log.info("Źródło '%s': %d duplikatów pominięto", name, duplicates)
     return screenings
 
 
