@@ -11,7 +11,7 @@ from .letterboxd import WatchlistError, fetch as fetch_watchlist
 from .matcher import match
 from .models import Screening
 from .normalize import normalize_title
-from .sources import coigdzie, helios, multikino, zak
+from .sources import coigdzie, helios, multikino, stocznia, zak
 from .tmdb import TmdbResolver
 
 log = logging.getLogger(__name__)
@@ -22,6 +22,7 @@ SOURCES = {
     "helios": helios.fetch,
     "multikino": multikino.fetch,
     "zak": zak.fetch,
+    "stocznia": stocznia.fetch,
     "coigdzie": coigdzie.fetch,
 }
 
