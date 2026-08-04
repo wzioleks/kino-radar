@@ -2,7 +2,10 @@
 
 Strona jest per-film: div.movie -> a.title (tytuł) + wiele div.cinema.row,
 każdy z a.cinemaname i seansami:
-    <a href="BOOKING_URL"><span class="badge-light" data-time="YYYY-MM-DD HH:MM:SS">
+    <span class="badge-light" data-time="YYYY-MM-DD HH:MM:SS">
+
+Godzina bywa owinięta w <a href="BOOKING_URL">, ale tylko w kinach ze sprzedażą
+online — Żak linku nie ma, więc źródłem prawdy jest sam badge, nie <a>.
 
 Bierzemy TYLKO kina z whitelisty studyjnych (multipleksy ignorujemy — są z API).
 """
@@ -21,7 +24,8 @@ from ..normalize import normalize_title
 
 log = logging.getLogger(__name__)
 
-URL_TMPL = "https://live.coigdzie.pl/miasto/Gdansk/dzien/{day}"
+SITE = "https://live.coigdzie.pl"
+URL_TMPL = f"{SITE}/miasto/Gdansk/dzien/{{day}}"
 
 # coigdzie adresuje dni nazwą dnia tygodnia (dziś = '0'). Pokrywa rolujący tydzień.
 COIGDZIE_MAX_DAYS = 7
@@ -58,6 +62,21 @@ def _match_cinema(raw_name: str) -> str | None:
     return None
 
 
+def _show_url(badge, cinema_node) -> str:
+    """URL biletu z <a> owijającego godzinę.
+
+    Kina bez sprzedaży online (np. Żak) mają samą godzinę bez linku — wtedy
+    kierujemy na stronę kina w coigdzie, żeby seans nie wypadł z wyników.
+    """
+    node = badge.parent
+    while node is not None:
+        if node.tag == "a" and node.attributes.get("href"):
+            return node.attributes["href"]
+        node = node.parent
+    href = cinema_node.attributes.get("href") or ""
+    return SITE + href if href.startswith("/") else href
+
+
 def _parse_day(html: str) -> list[Screening]:
     dom = HTMLParser(html)
     out: list[Screening] = []
@@ -73,10 +92,7 @@ def _parse_day(html: str) -> list[Screening]:
             canon = _match_cinema(name_node.text())
             if canon is None:
                 continue  # multipleks lub kino spoza whitelisty
-            for link in row.css("span.shows a[href]"):
-                badge = link.css_first("span.badge-light[data-time]")
-                if not badge:
-                    continue
+            for badge in row.css("span.shows span.badge-light[data-time]"):
                 data_time = badge.attributes.get("data-time", "")  # 'YYYY-MM-DD HH:MM:SS'
                 date, _, time = data_time.partition(" ")
                 if not date or not time:
@@ -87,7 +103,7 @@ def _parse_day(html: str) -> list[Screening]:
                     time=time[:5],
                     cinema=canon,
                     cinema_type="studyjne",
-                    url=link.attributes.get("href", ""),
+                    url=_show_url(badge, name_node),
                 ))
     return out
 

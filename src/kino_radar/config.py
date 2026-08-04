@@ -46,6 +46,7 @@ STUDYJNE_CINEMAS: frozenset[str] = frozenset({
     "Kino Muzeum",
     "Kino IKM",
     "Cinema1",
+    "Kino na Szekspirowskim",
 })
 
 

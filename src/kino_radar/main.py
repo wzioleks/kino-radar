@@ -10,6 +10,7 @@ from .http import make_client
 from .letterboxd import WatchlistError, fetch as fetch_watchlist
 from .matcher import match
 from .models import Screening
+from .normalize import normalize_title
 from .sources import coigdzie, helios, multikino
 from .tmdb import TmdbResolver
 
@@ -37,11 +38,36 @@ async def collect_screenings(client, days: int) -> list[Screening]:
     return screenings
 
 
+def share_original_titles(screenings: list[Screening]) -> int:
+    """Uzupełnia brakujące tytuły oryginalne mapą tytuł polski -> oryginalny.
+
+    Multikino zwraca originalTitle puste dla każdego filmu, Helios podaje je
+    niezawodnie. Ten sam film w obu sieciach ma praktycznie ten sam tytuł
+    polski, więc mapa z Heliosa domyka lukę bez pytania TMDb.
+    """
+    pl_to_original: dict[str, str] = {}
+    for s in screenings:
+        if s.original_title:
+            pl_to_original.setdefault(normalize_title(s.title), s.original_title)
+
+    filled = 0
+    for s in screenings:
+        if not s.original_title:
+            original = pl_to_original.get(normalize_title(s.title))
+            if original:
+                s.original_title = original
+                filled += 1
+    return filled
+
+
 async def run(days: int = DAYS_AHEAD) -> None:
     conn = db.connect()
     async with make_client() as client:
         screenings = await collect_screenings(client, days)
         log.info("Zebrano %d seansów ze wszystkich źródeł", len(screenings))
+
+        filled = share_original_titles(screenings)
+        log.info("Tytuł oryginalny uzupełniony z innego źródła: %d seansów", filled)
 
         watchlist = await fetch_watchlist(client, LETTERBOXD_USER)
 

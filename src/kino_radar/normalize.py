@@ -10,6 +10,14 @@ _WS = re.compile(r"\s+")
 # Polskie znaki, których unicodedata nie rozkłada (ł/Ł).
 _SPECIAL = str.maketrans({"ł": "l", "Ł": "l"})
 
+# Dopiski wydania/formatu, którymi kina ozdabiają ten sam film
+# ('Backrooms. Bez wyjścia - wersja rozszerzona' vs 'Backrooms. Bez wyjścia').
+# Doklejane na końcu tytułu; usuwane przed porównaniem, nie przed wyświetleniem.
+_EDITION = re.compile(
+    r"\s+(wersja\s+\w+|2d|3d|4dx|imax|vip|dubbing|napisy|"
+    r"z\s+napisami|premiera|maraton)\b.*$"
+)
+
 
 def strip_diacritics(text: str) -> str:
     text = text.translate(_SPECIAL)
@@ -18,7 +26,8 @@ def strip_diacritics(text: str) -> str:
 
 
 def normalize_title(text: str) -> str:
-    """lower + bez diakrytyków + bez interpunkcji + pojedyncze spacje."""
+    """lower + bez diakrytyków + bez interpunkcji + bez dopisku wydania."""
     text = strip_diacritics(text).lower()
     text = _PUNCT.sub(" ", text)
-    return _WS.sub(" ", text).strip()
+    text = _WS.sub(" ", text).strip()
+    return _EDITION.sub("", text).strip() or text

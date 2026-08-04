@@ -52,6 +52,38 @@ def test_coigdzie_klub_kot_alias(load_text):
     assert spektrum[0].time == "20:00"
 
 
+def _coigdzie_row(shows_html: str) -> str:
+    return f"""<div class="movie">
+      <a class="title">Ghost in the Shell</a>
+      <div class="cinema row">
+        <div class="col"><a href="/kino/kino-zak-w-gdansku-129053"
+           class="cinemaname">Kino Żak w Gdańsku</a></div>
+        <div class="col"><span class="shows">{shows_html}</span></div>
+      </div>
+    </div>"""
+
+
+def test_coigdzie_keeps_showing_without_booking_link():
+    """Kina bez sprzedaży online (Żak) mają samą godzinę — nie wolno jej gubić."""
+    out = _parse_day(_coigdzie_row(
+        '<span class="badge badge-light" data-time="2026-08-07 20:15:00">20:15</span>'
+    ))
+    assert len(out) == 1
+    assert out[0].cinema == "Kino Żak"
+    assert out[0].date == "2026-08-07" and out[0].time == "20:15"
+    # brak linku do biletu -> fallback na stronę kina
+    assert out[0].url == "https://live.coigdzie.pl/kino/kino-zak-w-gdansku-129053"
+
+
+def test_coigdzie_prefers_booking_link_when_present():
+    out = _parse_day(_coigdzie_row(
+        '<a href="https://bilety.example.pl/x">'
+        '<span class="badge badge-light" data-time="2026-08-07 20:15:00">20:15</span></a>'
+    ))
+    assert len(out) == 1
+    assert out[0].url == "https://bilety.example.pl/x"
+
+
 def test_letterboxd_parse(load_text):
     items = _parse_page(load_text("letterboxd_watchlist.html"))
     assert len(items) == 3
