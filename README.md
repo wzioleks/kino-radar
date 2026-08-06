@@ -26,8 +26,8 @@ about it. This page answers one question — *is anything I want to see playing 
 
 | Cinema | Source | Coverage |
 |---|---|---|
-| Helios Forum, Helios Metropolia | `api.helios.pl` (JSON) | 14 days |
-| Multikino Gdańsk | `multikino.pl` API (JSON) | 14 days |
+| Helios Forum, Helios Metropolia | `api.helios.pl` (JSON) | 30 days |
+| Multikino Gdańsk | `multikino.pl` API (JSON) | 30 days |
 | Kino Żak | `klubzak.com.pl` (HTML) | ~a month |
 | Kino na 100czni | `100cznia.pl` (HTML) | biweekly open-air cycle |
 | Spektrum, Kameralne, Cinema1, Szekspirowski | `live.coigdzie.pl` (HTML) | ~7 days |

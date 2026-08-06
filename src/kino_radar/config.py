@@ -16,8 +16,10 @@ USER_AGENT = (
 # Odstęp między requestami do tego samego źródła (rate limiting).
 REQUEST_DELAY_S = 1.0
 
-# Ile dni repertuaru do przodu zbieramy.
-DAYS_AHEAD = 14
+# Ile dni repertuaru do przodu zbieramy. Multikino robi jedno zapytanie na
+# dzień (REQUEST_DELAY_S między nimi), więc wyższa wartość wydłuża scraping
+# liniowo; coigdzie i tak ucina do COIGDZIE_MAX_DAYS niezależnie od tej stałej.
+DAYS_AHEAD = 30
 
 
 @dataclass(frozen=True)
