@@ -64,3 +64,4 @@ def require_env(name: str) -> str:
 
 LETTERBOXD_USER = os.getenv("LETTERBOXD_USER", "")
 TMDB_API_KEY = os.getenv("TMDB_API_KEY", "")
+SCRAPER_API_KEY = os.getenv("SCRAPER_API_KEY", "")

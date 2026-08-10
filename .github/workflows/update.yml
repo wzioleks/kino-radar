@@ -43,6 +43,7 @@ jobs:
         env:
           LETTERBOXD_USER: ${{ secrets.LETTERBOXD_USER }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: python -m kino_radar.main
 
       - name: Upload artefaktu Pages
