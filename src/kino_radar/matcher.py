@@ -112,7 +112,7 @@ async def match(
 
         # 3. TMDb -> tmdb_id
         if hit is None and resolver is not None:
-            query = s.original_title or s.title
+            query = s.original_title or normalize_title(s.title)
             r = await resolver.resolve(query, await _screening_year(s))
             if r:
                 s.tmdb_id = r.tmdb_id

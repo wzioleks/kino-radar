@@ -65,7 +65,14 @@ class TmdbResolver:
             db.put_cached_tmdb(self.conn, key, None, None, None, None)
             return None
 
+        # Szukamy najpierw dokładnego trafienia na wypadek, gdyby TMDb rzucił śmieć na 1 miejscu
         top = results[0]
+        for res in results:
+            if normalize_title(res.get("title", "")) == normalize_title(title) or \
+               normalize_title(res.get("original_title", "")) == normalize_title(title):
+                top = res
+                break
+
         rel = top.get("release_date") or ""
         ryear = int(rel[:4]) if rel[:4].isdigit() else None
         resolved = Resolved(top["id"], top.get("original_title"), ryear,
