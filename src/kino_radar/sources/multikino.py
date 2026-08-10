@@ -28,18 +28,10 @@ CINEMA_NAME = "Multikino Gdańsk"
 SITE = "https://www.multikino.pl"
 
 
-def _wrap_url(url: str) -> str:
-    from ..config import SCRAPER_API_KEY
-    if SCRAPER_API_KEY:
-        import urllib.parse
-        return f"http://api.scraperapi.com?api_key={SCRAPER_API_KEY}&keep_headers=true&session_number=999&url={urllib.parse.quote(url)}"
-    return url
-
-
 async def _ensure_session(client: httpx.AsyncClient) -> None:
     """Pobiera anonimowy token sesji (cookie). Bez tego /films zwraca 401."""
     await asyncio.sleep(REQUEST_DELAY_S)
-    r = await client.post(_wrap_url(AUTH_URL), headers={"Content-Type": "application/json"})
+    r = await client.post(AUTH_URL, headers={"Content-Type": "application/json"})
     r.raise_for_status()
 
 
@@ -90,7 +82,7 @@ async def fetch(client: httpx.AsyncClient, days: int = DAYS_AHEAD) -> list[Scree
         url = f"{SHOWINGS}/cinemas/{CINEMA_ID}/films?showingDate={day}"
         await asyncio.sleep(REQUEST_DELAY_S)
         try:
-            r = await client.get(_wrap_url(url), headers={"Accept": "application/json"})
+            r = await client.get(url, headers={"Accept": "application/json"})
             r.raise_for_status()
             films = r.json().get("result") or []
         except (httpx.HTTPError, ValueError) as e:
