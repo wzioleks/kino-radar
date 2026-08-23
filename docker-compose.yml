@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   kino-web:
     image: nginx:alpine
