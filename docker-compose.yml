@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  web:
+  kino-web:
     image: nginx:alpine
     container_name: kino-web
     ports:
@@ -10,7 +10,7 @@ services:
       - ./public:/usr/share/nginx/html:ro
     restart: always
 
-  scraper:
+  kino-scraper:
     build: .
     container_name: kino-scraper
     volumes:
